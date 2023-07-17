@@ -79,8 +79,9 @@ func (psql *Postgres) GetAccountByName(name string) (*types.Account, error) {
 		return nil, err
 	}
 	acc := &types.Account{}
+	id := 0
 	for rows.Next() {
-		if err := rows.Scan(&acc.Username, &acc.Email, &acc.Password, &acc.CreatedAt); err != nil {
+		if err := rows.Scan(&id, &acc.Username, &acc.Email, &acc.Password, &acc.CreatedAt); err != nil {
 			return nil, err
 		}
 
@@ -96,8 +97,9 @@ func (psql *Postgres) GetAccountByEmail(email string) (*types.Account, error) {
 		return nil, err
 	}
 	acc := &types.Account{}
+	id := 0
 	for rows.Next() {
-		if err := rows.Scan(&acc.Username, &acc.Email, &acc.Password, &acc.CreatedAt); err != nil {
+		if err := rows.Scan(&id, &acc.Username, &acc.Email, &acc.Password, &acc.CreatedAt); err != nil {
 			return nil, err
 		}
 

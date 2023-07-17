@@ -7,6 +7,7 @@ import (
 
 	"github.com/Arch-4ng3l/TaskManage/storage"
 	"github.com/Arch-4ng3l/TaskManage/types"
+	"github.com/Arch-4ng3l/TaskManage/www"
 	"github.com/gorilla/mux"
 )
 
@@ -31,10 +32,13 @@ func NewAPIServer(addr string, store storage.Storage) *APIServer {
 func (s *APIServer) Run() {
 	router := mux.NewRouter()
 
-	router.HandleFunc("/account", createHTTPHandleFunc(s.handleAccountRequest))
-	router.HandleFunc("/login", createHTTPHandleFunc(s.handleLoginRequest))
-	router.HandleFunc("/task", createHTTPHandleFunc(s.handleTaskRequest))
-	router.HandleFunc("/task/{name}", createHTTPHandleFunc(s.handleGetTask))
+	router.HandleFunc("/api/account", createHTTPHandleFunc(s.handleAccountRequest))
+	router.HandleFunc("/api/login", createHTTPHandleFunc(s.handleLoginRequest))
+	router.HandleFunc("/api/task", createHTTPHandleFunc(s.handleTaskRequest))
+	router.HandleFunc("/api/task/{name}", createHTTPHandleFunc(s.handleGetTask))
+
+	www.AddFrontend(router)
+
 	fmt.Println("Listening on ", s.listeningAddr)
 
 	http.ListenAndServe(s.listeningAddr, router)
@@ -140,10 +144,11 @@ func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) 
 
 	acc := types.NewAccount(req.Email, req.Username, req.Password)
 	if err := s.store.AddNewAccount(acc); err != nil {
+		fmt.Println(err.Error())
 		return err
 	}
 
-	return WriteJSON(w, http.StatusOK, acc)
+	return WriteJSON(w, http.StatusCreated, acc)
 }
 
 func (s *APIServer) handleDeleteRequest(w http.ResponseWriter, r *http.Request) error {
@@ -175,10 +180,11 @@ func (s *APIServer) handleLoginRequest(w http.ResponseWriter, r *http.Request) e
 	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
 		return err
 	}
-
+	fmt.Println(req)
 	acc, err := s.store.GetAccountByEmail(req.Email)
 
 	if err != nil {
+		fmt.Println(err.Error())
 		return WriteJSON(w, http.StatusForbidden, NewAPIError("Not Allowed"))
 	}
 
