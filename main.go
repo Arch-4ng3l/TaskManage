@@ -1,8 +1,12 @@
 package main
 
-func main() {
+import (
+	"github.com/Arch-4ng3l/TaskManage/api"
+	"github.com/Arch-4ng3l/TaskManage/storage"
+)
 
-	psql := NewPostgres()
+func main() {
+	psql := storage.NewPostgres()
 	psql.Init()
-	NewAPIServer(":3000", psql).Run()
+	api.NewAPIServer(":3000", psql).Run()
 }

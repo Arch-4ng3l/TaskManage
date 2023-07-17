@@ -1,0 +1,151 @@
+package storage
+
+import (
+	"database/sql"
+	"log"
+
+	_ "github.com/lib/pq"
+)
+
+type Postgres struct {
+	db *sql.DB
+}
+
+func NewPostgres() *Postgres {
+	connStr := "user=moritz dbname=taskmanage password=postgres sslmode=disable"
+
+	db, err := sql.Open("postgres", connStr)
+
+	if err != nil {
+		return nil
+	}
+
+	return &Postgres{
+		db,
+	}
+
+}
+
+func (psql *Postgres) Init() {
+	query := `CREATE TABLE IF NOT EXISTS users(
+		id serial PRIMARY KEY,
+		username VARCHAR(50) UNIQUE,
+		email TEXT UNIQUE,
+		password TEXT,
+		created_at TIMESTAMP
+	)`
+	query2 := `CREATE TABLE IF NOT EXISTS tasks(
+		id serial PRIMARY KEY,
+		creator VARCHAR(50),
+		task_name VARCHAR(50), 
+		task_content TEXT,
+		created_at TIMESTAMP
+	)`
+
+	_, err := psql.db.Query(query)
+	if err != nil {
+		log.Fatal(err)
+	}
+	_, err = psql.db.Query(query2)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+}
+
+func (psql *Postgres) AddNewAccount(acc *Account) error {
+
+	query := `INSERT INTO users (username, email, password, created_at) VALUES($1, $2, $3, $4)`
+
+	_, err := psql.db.Exec(query, acc.Username, acc.Email, acc.Password, acc.CreatedAt)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (psql *Postgres) RemoveAccount(acc *Account) error {
+	query := `DELETE FROM users WHERE username=$1 AND email=$2`
+	_, err := psql.db.Exec(query, acc.Username, acc.Email)
+	return err
+}
+func (psql *Postgres) GetAccountByName(name string) (*Account, error) {
+	query := `SELECT * FROM users WHERE username=$1`
+	rows, err := psql.db.Query(query, name)
+	if err != nil {
+		return nil, err
+	}
+	acc := &Account{}
+	for rows.Next() {
+		if err := rows.Scan(&acc.Username, &acc.Email, &acc.Password, &acc.CreatedAt); err != nil {
+			return nil, err
+		}
+
+	}
+
+	return acc, nil
+}
+
+func (psql *Postgres) GetAccountByEmail(email string) (*Account, error) {
+	query := `SELECT * FROM users WHERE email=$1`
+	rows, err := psql.db.Query(query, email)
+	if err != nil {
+		return nil, err
+	}
+	acc := &Account{}
+	for rows.Next() {
+		if err := rows.Scan(&acc.Username, &acc.Email, &acc.Password, &acc.CreatedAt); err != nil {
+			return nil, err
+		}
+
+	}
+
+	return acc, nil
+}
+
+func (psql *Postgres) AddNewTask(task *Task) error {
+	query := `INSERT INTO tasks (creator, task_name, task_content, created_at) VALUES($1, $2, $3, $4)`
+	_, err := psql.db.Exec(query, task.Name, task.TaskName, task.TaskContent, task.CreatedAt)
+	return err
+}
+func (psql *Postgres) RemoveTask(task *Task) error {
+
+	query := `DELETE FROM tasks WHERE creator=$1 AND task_name=$2`
+	_, err := psql.db.Exec(query, task.Name, task.TaskName)
+	return err
+}
+func (psql *Postgres) TaskFromUser(username, taskname string) (*Task, error) {
+	query := `SELECT * FROM tasks WHERE creator=$1 AND task_name=$2`
+	rows, err := psql.db.Query(query, username, taskname)
+	if err != nil {
+		return nil, err
+	}
+	task := &Task{}
+	for rows.Next() {
+		err := rows.Scan(&task.Name, &task.TaskName, &task.TaskContent, &task.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return task, nil
+}
+
+func (psql *Postgres) AllTasksFromUser(username string) ([]*Task, error) {
+	query := `SELECT * FROM task WHERE creator=$1`
+	rows, err := psql.db.Query(query, username)
+	if err != nil {
+		return nil, err
+	}
+	var tasks []*Task
+	for rows.Next() {
+
+		task := Task{}
+		err := rows.Scan(&task.Name, &task.TaskName, &task.TaskContent, &task.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		tasks = append(tasks, &task)
+	}
+	return tasks, nil
+}
