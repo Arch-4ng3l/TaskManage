@@ -5,8 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Dashboard</title>
+    <script src="/static/dashboard.js"></script>
   </head>
   <body>
-      <h1>Hello {{ .Username }}</h1>
+      <h1>Hello {{ .User.Username }}</h1>
+      <input type="button" value="Create New Task"></input>
+
+      {{range .Tasks}} 
+      <div class="card">
+        <h2>Task Name</h2>
+        {{ .TaskName }}
+        <br>
+        <h2>Content</h2>
+        {{ .TaskContent }}
+        <br>
+      </div>
+      {{end}}
   </body>
 </html>

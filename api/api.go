@@ -7,6 +7,7 @@ import (
 
 	"github.com/Arch-4ng3l/TaskManage/storage"
 	"github.com/Arch-4ng3l/TaskManage/types"
+	"github.com/Arch-4ng3l/TaskManage/util"
 	"github.com/Arch-4ng3l/TaskManage/www"
 	"github.com/gorilla/mux"
 )
@@ -17,7 +18,6 @@ type APIServer struct {
 }
 
 type APIFunc func(http.ResponseWriter, *http.Request) error
-
 type APIError struct {
 	Error string `json:"error"`
 }
@@ -32,16 +32,18 @@ func NewAPIServer(addr string, store storage.Storage) *APIServer {
 func (s *APIServer) Run() {
 	router := mux.NewRouter()
 
+	www.AddFrontend(s.store, router)
+
 	router.HandleFunc("/api/account", createHTTPHandleFunc(s.handleAccountRequest))
 	router.HandleFunc("/api/login", createHTTPHandleFunc(s.handleLoginRequest))
 	router.HandleFunc("/api/task", createHTTPHandleFunc(s.handleTaskRequest))
 	router.HandleFunc("/api/task/{name}", createHTTPHandleFunc(s.handleGetTask))
-
-	www.AddFrontend(router)
+	router.HandleFunc("/api/auth", createHTTPHandleFunc(s.handleGetTask))
 
 	fmt.Println("Listening on ", s.listeningAddr)
 
 	http.ListenAndServe(s.listeningAddr, router)
+
 }
 
 func (s *APIServer) handleTaskRequest(w http.ResponseWriter, r *http.Request) error {
@@ -94,7 +96,6 @@ func (s *APIServer) handleGetTaskByName(w http.ResponseWriter, r *http.Request) 
 	req := &types.GetTaskRequest{}
 
 	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
-		fmt.Println(err.Error())
 		return err
 	}
 
@@ -104,7 +105,6 @@ func (s *APIServer) handleGetTaskByName(w http.ResponseWriter, r *http.Request) 
 
 	task, err := s.store.TaskFromUser(req.Name, req.TaskName)
 	if err != nil {
-		fmt.Println(err.Error())
 		return err
 	}
 	return WriteJSON(w, http.StatusOK, task)
@@ -118,7 +118,6 @@ func (s *APIServer) handleGetAllTasks(w http.ResponseWriter, r *http.Request) er
 
 	tasks, err := s.store.AllTasksFromUser(name)
 	if err != nil {
-		fmt.Println(err.Error())
 		return err
 	}
 	return WriteJSON(w, http.StatusOK, tasks)
@@ -144,11 +143,14 @@ func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) 
 
 	acc := types.NewAccount(req.Email, req.Username, req.Password)
 	if err := s.store.AddNewAccount(acc); err != nil {
-		fmt.Println(err.Error())
 		return err
 	}
 
-	return WriteJSON(w, http.StatusCreated, acc)
+	token, err := util.CreateJWT(acc)
+	if err != nil {
+		return err
+	}
+	return WriteJSON(w, http.StatusOK, map[string]string{"token": token})
 }
 
 func (s *APIServer) handleDeleteRequest(w http.ResponseWriter, r *http.Request) error {
@@ -180,19 +182,36 @@ func (s *APIServer) handleLoginRequest(w http.ResponseWriter, r *http.Request) e
 	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
 		return err
 	}
-	fmt.Println(req)
+
 	acc, err := s.store.GetAccountByEmail(req.Email)
 
 	if err != nil {
-		fmt.Println(err.Error())
 		return WriteJSON(w, http.StatusForbidden, NewAPIError("Not Allowed"))
 	}
 
 	if types.CreateHash(req.Password) != acc.Password {
 		return WriteJSON(w, http.StatusForbidden, NewAPIError("Not Allowed"))
 	}
+	token, err := util.CreateJWT(acc)
+	if err != nil {
+		return err
+	}
 
+	return WriteJSON(w, http.StatusOK, map[string]string{"token": token, "username": acc.Username})
+}
+
+func AuthJWT(w http.ResponseWriter, r *http.Request) error {
+	name := r.Header.Get("username")
+	email := r.Header.Get("email")
+
+	acc := types.NewAccount(email, name, "")
+	if !util.AuthJWT(r.Header.Get("jwt-token"), acc) {
+		return WriteJSON(w, http.StatusForbidden, NewAPIError("Access denied"))
+	}
+
+	w.WriteHeader(http.StatusOK)
 	return nil
+
 }
 
 func createHTTPHandleFunc(f APIFunc) http.HandlerFunc {
