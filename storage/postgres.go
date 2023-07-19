@@ -115,7 +115,6 @@ func (psql *Postgres) AddNewTask(task *types.Task) error {
 			  WHERE NOT EXISTS(
 				  SELECT id FROM tasks WHERE creator = $1 AND task_name = $2
 			  )`
-
 	res, err := psql.db.Exec(query, task.Name, task.TaskName, task.TaskContent, task.CreatedAt)
 	if i, _ := res.RowsAffected(); i < 1 {
 		return fmt.Errorf("Task Already Exists")

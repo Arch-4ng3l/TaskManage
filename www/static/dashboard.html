@@ -5,21 +5,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Dashboard</title>
+    <link rel="stylesheet" href=/static/main.css>
     <script src="/static/dashboard.js"></script>
   </head>
   <body>
+      <div class="container">
       <h1>Hello {{ .User.Username }}</h1>
-      <input type="button" value="Create New Task"></input>
 
+      <input type="button" class="btn" onclick="openPopup()"  value="Create New Task"></input>
+      </div>
+          <div class="popup" id="popup">
+              <div class="container">
+                  <h1>Create a Task</h1>
+                  <br>
+                  <input type="text" class="taskname" id="taskName"> </input>
+                  <br>
+                  <textarea class="content" id="content" rows="4" cols="50" id="taskContent"></textarea> 
+                  <br>
+                  <input type="button" class="btn" onclick="createTask()" value="Create"></input>
+                  <input type="button" class="btn" onclick="closePopup()" value="Close"></input>
+              </div>
+          </div>
+
+      <br>
+
+
+    
+      <div class="container">
       {{range .Tasks}} 
       <div class="card">
         <h2>Task Name</h2>
         {{ .TaskName }}
         <br>
         <h2>Content</h2>
-        {{ .TaskContent }}
+        <div class="taskcontent">
+        <p >{{ .TaskContent }}</p>
+        </div>
         <br>
       </div>
+      <br>
       {{end}}
+
+    </div>
   </body>
 </html>

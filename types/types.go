@@ -15,6 +15,8 @@ type CreateTaskRequest struct {
 	Name        string `json:"username"`
 	TaskName    string `json:"taskName"`
 	TaskContent string `json:"taskContent"`
+	Email       string `json:"email"`
+	Token       string `json:"token"`
 }
 
 type Task struct {

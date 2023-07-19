@@ -77,6 +77,11 @@ func (s *APIServer) handleCreateTask(w http.ResponseWriter, r *http.Request) err
 	}
 
 	// TODO AUTH if user that Creates the task exists and has Perms
+	acc := types.NewAccount(req.Email, req.Name, "")
+
+	if !util.AuthJWT(req.Token, acc) {
+		return WriteJSON(w, http.StatusBadRequest, nil)
+	}
 
 	task := types.NewTask(req.Name, req.TaskName, req.TaskContent)
 	if err := s.store.AddNewTask(task); err != nil {

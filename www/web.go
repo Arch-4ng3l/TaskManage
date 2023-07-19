@@ -51,11 +51,7 @@ func handleDashboard(w http.ResponseWriter, r *http.Request) {
 	if !util.AuthJWT(token, acc) {
 		return
 	}
-
 	tasks, _ := store.AllTasksFromUser(name)
-
-	task := types.NewTask("TEST", "TEST", "TEST")
-	tasks = append(tasks, task)
 
 	user := &Data{
 		acc,
