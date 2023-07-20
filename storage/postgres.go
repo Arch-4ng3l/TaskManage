@@ -122,11 +122,11 @@ func (psql *Postgres) AddNewTask(task *types.Task) error {
 	return err
 
 }
-func (psql *Postgres) RemoveTask(task *types.Task) error {
+func (psql *Postgres) RemoveTask(creator, taskname string) error {
 
 	query := `DELETE FROM tasks WHERE creator=$1 AND task_name=$2`
 
-	_, err := psql.db.Exec(query, task.Name, task.TaskName)
+	_, err := psql.db.Exec(query, creator, taskname)
 
 	return err
 }

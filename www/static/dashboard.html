@@ -10,42 +10,48 @@
   </head>
   <body>
       <div class="container">
-      <h1>Hello {{ .User.Username }}</h1>
-
-      <input type="button" class="btn" onclick="openPopup()"  value="Create New Task"></input>
-      </div>
-          <div class="popup" id="popup">
-              <div class="container">
-                  <h1>Create a Task</h1>
-                  <br>
-                  <input type="text" class="taskname" id="taskName"> </input>
-                  <br>
-                  <textarea class="content" id="content" rows="4" cols="50" id="taskContent"></textarea> 
-                  <br>
-                  <input type="button" class="btn" onclick="createTask()" value="Create"></input>
-                  <input type="button" class="btn" onclick="closePopup()" value="Close"></input>
-              </div>
+          <h1>Hello {{ .User.Username }}</h1>
+          <div class="container2">
+            <input type="button" class="mainbtn" onclick="openPopup()"  value="Create New Task"></input>
           </div>
-
-      <br>
-
-
-    
-      <div class="container">
-      {{range .Tasks}} 
-      <div class="card">
-        <h2>Task Name</h2>
-        {{ .TaskName }}
-        <br>
-        <h2>Content</h2>
-        <div class="taskcontent">
-        <p >{{ .TaskContent }}</p>
-        </div>
-        <br>
       </div>
-      <br>
-      {{end}}
+      <div class="popup" id="popup">
+          <div class="container">
+              <h1>Create a Task</h1>
+              <h2>Taskname</h2>
+              <input type="text" class="taskname" id="taskName"> </input>
+              <br>
+              <h2>Taskcontent</h2>
+              <textarea class="content" rows="4" cols="50" id="taskContent"></textarea> 
+              <br>
+              <br>
+              <input type="button" class="btn" onclick="createTask()" value="Create"></input>
+              <br>
+              <br>
+              <input type="button" class="btn" onclick="closePopup()" value="Close"></input>
+          </div>
+      </div>
 
-    </div>
+      <br>
+
+
+
+      <div class="container">
+          {{range .Tasks}} 
+          <div class="card">
+              <h2>Task Name</h2>
+              <h3>{{ .TaskName }}</h3>
+              <h2>Content</h2>
+              <div class="taskcontent">
+                  <p>{{ .TaskContent }}</p>
+              </div>
+              <br>
+            <input type="button" class="removetask" onclick="removeTask(event)" value="Remove"></input>
+            <br>
+          </div>
+          <br>
+          {{end}}
+
+      </div>
   </body>
 </html>

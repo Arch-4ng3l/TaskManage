@@ -10,7 +10,7 @@ type Storage interface {
 	GetAccountByName(string) (*types.Account, error)
 	GetAccountByEmail(string) (*types.Account, error)
 	AddNewTask(*types.Task) error
-	RemoveTask(*types.Task) error
+	RemoveTask(string, string) error
 	TaskFromUser(string, string) (*types.Task, error)
 	AllTasksFromUser(string) ([]*types.Task, error)
 }

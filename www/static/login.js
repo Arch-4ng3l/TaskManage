@@ -1,14 +1,14 @@
 function login() {
     
-    var email = document.getElementsByName("email")[0].value;
-    var pw = document.getElementsByName("passwd")[0].value;
+    const email = document.getElementsByName("email")[0].value;
+    const pw = document.getElementsByName("passwd")[0].value;
 
-    var data = {
+    const data = {
         email: email,
         password: pw
     };
     
-    var jsonData = JSON.stringify(data)
+    const jsonData = JSON.stringify(data)
 
     url = "/api/login";
     fetch(url, {
@@ -27,9 +27,9 @@ function login() {
         }
     })
     .then(data => {
-        var cleanData = JSON.parse(data);
-        var token = cleanData.token;
-        var name = cleanData.username;
+        const cleanData = JSON.parse(data);
+        const token = cleanData.token;
+        const name = cleanData.username;
         redirect(token, name, email);
     })
 }

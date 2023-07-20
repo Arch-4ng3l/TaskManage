@@ -53,3 +53,49 @@ function getCookie(name) {
     }
   }
 }
+
+
+function removeTask(event) {
+
+    if (event.target.classList.contains('removetask')) {
+         
+        const card = event.target.closest('.card');
+
+        const nameElement = card.querySelector('h3');
+
+        const name = nameElement.textContent;
+        const token = getCookie("jwt-token")
+        const username = getCookie("username");
+        const email = getCookie("email");
+        const url = "/api/task/remove";
+
+        const data = {
+            username: username,
+            email: email,
+            taskname: name,
+            token: token
+        }; 
+
+        const jsonData = JSON.stringify(data);
+        console.log(jsonData); 
+        fetch(url, {
+            method: "POST", 
+            body: jsonData,
+        }).then(response => {
+            if(response.ok) {
+                location.reload();
+            }
+        });
+    }
+}
+
+const container = document.querySelector('.card');
+
+container.addEventListener('click', function(event) {
+  if (event.target.classList.contains('removetask')) {
+    const taskname = event.target.closest('.taskname');
+    const cont = taskname.textContent();
+    console.log(cont);
+    specificDiv.style.backgroundColor = 'yellow';
+  }
+});

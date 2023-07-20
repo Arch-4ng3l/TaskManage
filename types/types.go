@@ -6,6 +6,13 @@ import (
 	"time"
 )
 
+type RemoveTaskRequest struct {
+	Name     string `json:"username"`
+	Email    string `json:"email"`
+	TaskName string `json:"taskName"`
+	Token    string `json:"token"`
+}
+
 type GetTaskRequest struct {
 	Name     string `json:"username"`
 	TaskName string `json:"taskName"`

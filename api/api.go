@@ -37,7 +37,7 @@ func (s *APIServer) Run() {
 	router.HandleFunc("/api/account", createHTTPHandleFunc(s.handleAccountRequest))
 	router.HandleFunc("/api/login", createHTTPHandleFunc(s.handleLoginRequest))
 	router.HandleFunc("/api/task", createHTTPHandleFunc(s.handleTaskRequest))
-	router.HandleFunc("/api/task/{name}", createHTTPHandleFunc(s.handleGetTask))
+	router.HandleFunc("/api/task/remove", createHTTPHandleFunc(s.handleRemoveTask))
 	router.HandleFunc("/api/auth", createHTTPHandleFunc(s.handleGetTask))
 
 	fmt.Println("Listening on ", s.listeningAddr)
@@ -45,7 +45,26 @@ func (s *APIServer) Run() {
 	http.ListenAndServe(s.listeningAddr, router)
 
 }
+func (s *APIServer) handleRemoveTask(w http.ResponseWriter, r *http.Request) error {
 
+	req := &types.RemoveTaskRequest{}
+
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		fmt.Println(err.Error())
+		return err
+	}
+	acc := types.NewAccount(req.Email, req.Name, "")
+
+	if !util.AuthJWT(req.Token, acc) {
+		return nil
+	}
+	if err := s.store.RemoveTask(req.Name, req.TaskName); err != nil {
+		fmt.Println(err.Error())
+		return err
+	}
+
+	return nil
+}
 func (s *APIServer) handleTaskRequest(w http.ResponseWriter, r *http.Request) error {
 	switch r.Method {
 	case "POST":
@@ -92,9 +111,6 @@ func (s *APIServer) handleCreateTask(w http.ResponseWriter, r *http.Request) err
 }
 
 func (s *APIServer) handleGetTaskByName(w http.ResponseWriter, r *http.Request) error {
-
-	// tokenStr := r.Header.Get("jwt-token")
-	// Auth jwt Token
 
 	name := mux.Vars(r)["name"]
 
